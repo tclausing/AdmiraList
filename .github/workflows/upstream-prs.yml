@@ -30,11 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRepositoryOwner,headRepository,headRefName,createdAt | jq -c '.[] | select(.headRepository != null) | {repo: "\(.headRepositoryOwner.login)/\(.headRepository.name)", branch: .headRefName, createdAt: .createdAt}' | sort -r)
-          # Convert PRS to newline-separated format and set it as an environment variable
-          echo "PRS<<EOF" >> $GITHUB_ENV
+          PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRepositoryOwner,headRepository,headRefName,createdAt | jq -c '[.[] | select(.headRepository != null) | {repo: "\(.headRepositoryOwner.login)/\(.headRepository.name)", branch: .headRefName, createdAt: .createdAt}]')
           echo "PRS=${PRS}" | tee -a $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
       - name: Merge PR branches into local branch
         run: |
@@ -42,8 +39,10 @@ jobs:
           git checkout -b $LOCAL_BRANCH
           git reset --hard upstream/master
 
-          # Convert JSON array to newline-separated for loop processing
-          echo "$PRS" | jq -r '.repo + " " + .branch' | while read -r repo branch; do
+          # Iterate over the JSON array
+          echo "$PRS" | jq -c '.[]' | while read -r pr; do
+            repo=$(echo "$pr" | jq -r '.repo')
+            branch=$(echo "$pr" | jq -r '.branch')
             # Add and fetch the remote if it doesn't already exist
             if ! git remote | grep -q "${repo}"; then
               git remote add "${repo}" "https://github.com/${repo}.git"
