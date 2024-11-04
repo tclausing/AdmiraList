@@ -1,0 +1,43 @@
+name: Merge Upstream PRs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3 7 * * *'
+
+jobs:
+  merge-upstream-prs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPO.git
+          git fetch upstream master:master
+
+      - name: Get all open PRs from upstream
+        id: get_prs
+        run: |
+          PRS=$(gh pr list --repo ORIGINAL_OWNER/ORIGINAL_REPO --state open --json headRefName --sort created --order DESC --jq '.[].headRefName')
+          echo "prs=${PRS}" | tee -a $GITHUB_ENV
+
+      - name: Merge PR branches into local branch
+        run: |
+          LOCAL_BRANCH="upstream-prs"
+          git checkout upstream/master
+          git checkout -b $LOCAL_BRANCH
+          for pr in ${prs}; do
+            git merge --no-ff "upstream/$pr" && echo "Merged $pr" || echo "Merge conflict with $pr, skipping"
+          done
+          git log upstream/master..HEAD --oneline --all
+          # git push origin $LOCAL_BRANCH --force # Push merged branch back to the remote
