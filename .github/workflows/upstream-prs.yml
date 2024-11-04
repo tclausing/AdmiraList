@@ -56,6 +56,7 @@ jobs:
               # git merge --abort
               echo "Merge conflict with ${repo}/${branch}, accepting both changes"
               git status | grep 'both modified' | awk '{print $3}' | xargs sed -i -E '/^<<<<<<<|^=======|^>>>>>>>/d'
+              git commit -a --no-edit
             fi
           done
 
