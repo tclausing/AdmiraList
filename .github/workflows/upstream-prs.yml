@@ -23,7 +23,7 @@ jobs:
       - name: Add upstream remote
         run: |
           git remote add upstream https://github.com/jkrejcha/AdmiraList.git
-          git fetch upstream master:master
+          git fetch upstream master
 
       - name: Get all open PRs from upstream with source repo information
         id: get_prs
@@ -36,8 +36,8 @@ jobs:
       - name: Merge PR branches into local branch
         run: |
           LOCAL_BRANCH="upstream-prs"
-          git checkout upstream/master
           git checkout -b $LOCAL_BRANCH
+          git reset --hard upstream/master
 
           # Convert JSON array to newline-separated for loop processing
           echo "$PRS" | jq -r '.repo + " " + .branch' | while read -r repo branch; do
@@ -51,5 +51,5 @@ jobs:
             git merge --no-ff "${repo}/${branch}" && echo "Merged ${repo}/${branch}" || echo "Merge conflict with ${repo}/${branch}, skipping"
           done
 
-          git log upstream/master..HEAD --oneline --all
+          git log upstream/master..HEAD --all
           # git push origin $LOCAL_BRANCH --force
