@@ -61,4 +61,4 @@ jobs:
           done
 
           git log upstream/master..HEAD --oneline
-          # git push origin $LOCAL_BRANCH --force
+          git push --set-upstream origin $LOCAL_BRANCH --force
