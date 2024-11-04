@@ -31,7 +31,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRepositoryOwner,headRepository,headRefName,createdAt | jq -c '.[] | select(.headRepository != null) | {repo: "\(.headRepositoryOwner.login)/\(.headRepository.name)", branch: .headRefName, createdAt: .createdAt}' | sort -r)
+          # Convert PRS to newline-separated format and set it as an environment variable
+          echo "PRS<<EOF" >> $GITHUB_ENV
           echo "PRS=${PRS}" | tee -a $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Merge PR branches into local branch
         run: |
