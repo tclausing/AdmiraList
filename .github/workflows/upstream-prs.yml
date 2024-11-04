@@ -22,13 +22,13 @@ jobs:
 
       - name: Add upstream remote
         run: |
-          git remote add upstream https://github.com/ORIGINAL_OWNER/ORIGINAL_REPO.git
+          git remote add upstream https://github.com/jkrejcha/AdmiraList.git
           git fetch upstream master:master
 
       - name: Get all open PRs from upstream
         id: get_prs
         run: |
-          PRS=$(gh pr list --repo ORIGINAL_OWNER/ORIGINAL_REPO --state open --json headRefName --sort created --order DESC --jq '.[].headRefName')
+          PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRefName --sort created --order DESC --jq '.[].headRefName')
           echo "prs=${PRS}" | tee -a $GITHUB_ENV
 
       - name: Merge PR branches into local branch
