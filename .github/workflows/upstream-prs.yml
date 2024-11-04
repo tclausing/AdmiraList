@@ -50,8 +50,13 @@ jobs:
             git fetch "${repo}" "${branch}"
 
             # Merge the PR branch into the local branch
-            git merge --no-ff "${repo}/${branch}" && echo "Merged ${repo}/${branch}" || echo "Merge conflict with ${repo}/${branch}, skipping"
+            if git merge --no-ff "${repo}/${branch}"; then
+              echo "Merged ${repo}/${branch}"
+            else
+              echo "Merge conflict with ${repo}/${branch}, skipping" >> merge_conflicts.log
+              git merge --abort
+            fi
           done
 
-          git log upstream/master..HEAD --all
+          git log upstream/master..$LOCAL_BRANCH --all
           # git push origin $LOCAL_BRANCH --force
