@@ -60,5 +60,5 @@ jobs:
             fi
           done
 
-          git log upstream/master..HEAD
+          git log upstream/master..HEAD --oneline
           # git push origin $LOCAL_BRANCH --force
