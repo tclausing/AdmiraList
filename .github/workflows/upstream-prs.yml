@@ -25,19 +25,29 @@ jobs:
           git remote add upstream https://github.com/jkrejcha/AdmiraList.git
           git fetch upstream master:master
 
-      - name: Get all open PRs from upstream
+      - name: Get all open PRs from upstream with source repo information
         id: get_prs
         run: |
-          PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRefName --sort created --order DESC --jq '.[].headRefName')
-          echo "prs=${PRS}" | tee -a $GITHUB_ENV
+          PRS=$(gh pr list --repo jkrejcha/AdmiraList --state open --json headRepositoryOwner,headRepository,headRefName,createdAt | jq -c '.[] | select(.headRepository != null) | {repo: "\(.headRepositoryOwner.login)/\(.headRepository.name)", branch: .headRefName, createdAt: .createdAt}' | sort -r)
+          echo "PRS=${PRS}" | tee -a $GITHUB_ENV
 
       - name: Merge PR branches into local branch
         run: |
           LOCAL_BRANCH="upstream-prs"
           git checkout upstream/master
           git checkout -b $LOCAL_BRANCH
-          for pr in ${prs}; do
-            git merge --no-ff "upstream/$pr" && echo "Merged $pr" || echo "Merge conflict with $pr, skipping"
+
+          # Convert JSON array to newline-separated for loop processing
+          echo "$PRS" | jq -r '.repo + " " + .branch' | while read -r repo branch; do
+            # Add and fetch the remote if it doesn't already exist
+            if ! git remote | grep -q "${repo}"; then
+              git remote add "${repo}" "https://github.com/${repo}.git"
+            fi
+            git fetch "${repo}" "${branch}"
+
+            # Merge the PR branch into the local branch
+            git merge --no-ff "${repo}/${branch}" && echo "Merged ${repo}/${branch}" || echo "Merge conflict with ${repo}/${branch}, skipping"
           done
+
           git log upstream/master..HEAD --oneline --all
-          # git push origin $LOCAL_BRANCH --force # Push merged branch back to the remote
+          # git push origin $LOCAL_BRANCH --force
