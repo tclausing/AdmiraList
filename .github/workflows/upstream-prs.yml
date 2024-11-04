@@ -53,8 +53,9 @@ jobs:
             if git merge --no-ff "${repo}/${branch}"; then
               echo "Merged ${repo}/${branch}"
             else
-              echo "Merge conflict with ${repo}/${branch}, skipping" >> merge_conflicts.log
-              git merge --abort
+              # git merge --abort
+              echo "Merge conflict with ${repo}/${branch}, accepting both changes"
+              git status | grep 'both modified' | awk '{print $3}' | xargs sed -i -E '/^<<<<<<<|^=======|^>>>>>>>/d'
             fi
           done
 
