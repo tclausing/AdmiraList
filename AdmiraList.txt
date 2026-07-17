@@ -1,6 +1,5 @@
 2znp09oa.com
 35.190.48.184
-35.190.58.50
 35.190.62.199
 35.190.74.157
 35.190.91.111
@@ -442,7 +441,6 @@ capablecows.com
 capablecup.com
 capriciouscorn.com
 capsquirrel.com
-captainbicycle.com
 captainstick.com
 captivatingcanyon.com
 captivatingillusion.com
